@@ -1,0 +1,26 @@
+{
+  "name": "guia-backend",
+  "version": "1.0.0",
+  "description": "FRONT-END => https://github.com/DEUSYEET/Guia",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DEUSYEET/Guia-Backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DEUSYEET/Guia-Backend/issues"
+  },
+  "homepage": "https://github.com/DEUSYEET/Guia-Backend#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.6",
+    "uuid": "^8.3.1"
+  }
+}
