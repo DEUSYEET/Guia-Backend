@@ -4,6 +4,7 @@ module.exports = app => {
 
     app.route('/test').get(control.test);
     app.route('/').get(control.test);
+    app.route('/getAll').get(control.getAll);
 
     app.route('/uploadGuide').post(control.uploadGuide);
 }

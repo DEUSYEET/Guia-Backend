@@ -13,6 +13,8 @@ exports.uploadGuide = (req,res) =>{
     let description = req.body.desc;
     let image =  req.body.image;
     let video = req.body.video;
+    let author = req.body.author;
+
     let id = uuid.v4();
 
 
@@ -22,6 +24,9 @@ exports.uploadGuide = (req,res) =>{
     head.image = image;
     head.video = video;
     head.guideID = id;
+    head.author = author;
+    head.scoreUp = 0;
+    head.scoreDown = 0;
 
 
     console.log(head);
@@ -34,4 +39,13 @@ exports.uploadGuide = (req,res) =>{
         }
     })
 
+}
+
+exports.getAll = (req,res)=>{
+    GuideHead.find((err,result)=>{
+        if(err){
+            res.json(err)
+        }
+        res.send(result);
+    })
 }
