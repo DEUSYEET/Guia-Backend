@@ -27,7 +27,7 @@ mdb.once('open', function (callback) {
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 
-let whitelist = ["http://guia.us-west-1.elasticbeanstalk.com/","http://localhost:3000"]
+let whitelist = ["http://guia.us-west-1.elasticbeanstalk.com","http://localhost:3000"]
 app.use(cors({
     methods: ['GET', 'POST', 'DELETE'],
     origin: (origin,callback)=>{
