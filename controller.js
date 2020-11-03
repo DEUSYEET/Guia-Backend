@@ -3,8 +3,8 @@ let mongoose = require('mongoose');
 let uuid = require('uuid')
 let GuideHead = mongoose.model('GuideHead')
 let GuideSection = mongoose.model('GuideSection')
-const awsID = "AKIAIRETDA6BOUPVM2CQ";
-const awsSecret = "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";
+const awsID = "AKIAUYKTZAP5S2CBDXPV";
+const awsSecret = "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";
 const imageBucket = 'guia-images';
 
 const s3 = new aws.S3({
