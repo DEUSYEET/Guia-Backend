@@ -4,9 +4,12 @@ const bodyParser = require('body-parser');
 const cors = require('cors')
 let mongoose = require('mongoose');
 const routes = require("./routes");
+const multer = require('multer');
+const upload = multer();
 
 
 let GuideHeadSchema = require('./GuideHeadSchema')
+let GuideSectionSchema = require('./GuideSectionSchema')
 
 mongoose.Promise = global.Promise;
 mongoose.connect("mongodb+srv://root:GRHSNOuDazb37S4j@guia0.evfpg.mongodb.net/guides?retryWrites=true&w=majority").catch(error => console.log("error"));
@@ -26,12 +29,17 @@ mdb.once('open', function (callback) {
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
+app.use(upload.single('file'));
 
+
+//Remember to remove undefined for production
+// let whitelist = ["http://guia.us-west-1.elasticbeanstalk.com","http://localhost:3000", undefined]
 let whitelist = ["http://guia.us-west-1.elasticbeanstalk.com","http://localhost:3000"]
+
+
 app.use(cors({
     methods: ['GET', 'POST', 'DELETE'],
     origin: (origin,callback)=>{
-        console.log(origin)
         if (whitelist.includes(origin)){
             callback(null,true)
         }else {

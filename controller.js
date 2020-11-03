@@ -1,21 +1,65 @@
+const aws = require('aws-sdk');
 let mongoose = require('mongoose');
-let GuideHead = mongoose.model('GuideHead')
 let uuid = require('uuid')
+let GuideHead = mongoose.model('GuideHead')
+let GuideSection = mongoose.model('GuideSection')
+const awsID = "AKIAIRETDA6BOUPVM2CQ";
+const awsSecret = "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";
+const imageBucket = 'guia-images';
 
+const s3 = new aws.S3({
+    accessKeyId:awsID,
+    secretAccessKey:awsSecret
+});
 
 exports.test = (req, res) => {
     res.json("Hello There");
 }
 
 
-exports.uploadGuide = (req,res) =>{
-    let title = req.body.title;
-    let description = req.body.desc;
-    let image =  req.body.image;
-    let video = req.body.video;
-    let author = req.body.author;
 
-    let id = uuid.v4();
+exports.getAll = (req,res)=>{
+    GuideHead.find((err,result)=>{
+        if(err){
+            res.json(err)
+        }
+        res.send(result);
+    })
+}
+
+exports.getGuide = (req,res)=>{
+    let guideId = req.query.guideId;
+    let guideSections = [];
+
+    GuideHead.findOne({"guideID":guideId}, (err,result)=>{
+        if(err){
+            res.json(err)
+        }
+        guideSections.push(result)
+        GuideSection.find({"guideID":guideId}, (err,result)=>{
+            if(err){
+                res.json(err)
+            }
+            guideSections.push(result);
+            res.send(guideSections);
+        })
+    })
+
+
+}
+
+
+
+exports.uploadGuideHead = (req,res) =>{
+    let headData = JSON.parse(req.body.file);
+
+    let title = headData.title;
+    let description = headData.description;
+    let image =  headData.image;
+    let video = headData.video;
+    let author = headData.author;
+
+    let id = headData.id || uuid.v4();
 
 
     let head = new GuideHead();
@@ -24,12 +68,11 @@ exports.uploadGuide = (req,res) =>{
     head.image = image;
     head.video = video;
     head.guideID = id;
-    head.author = author;
+    head.author = author || "Anonymous";
     head.scoreUp = 0;
     head.scoreDown = 0;
 
-
-    console.log(head);
+    // console.log(head);
 
     head.save((err,result)=>{
         if (err){
@@ -41,11 +84,49 @@ exports.uploadGuide = (req,res) =>{
 
 }
 
-exports.getAll = (req,res)=>{
-    GuideHead.find((err,result)=>{
-        if(err){
-            res.json(err)
+
+exports.uploadGuideSection = (req,res) =>{
+    let title = req.body.title;
+    let description = req.body.desc;
+    let image =  req.body.image;
+    let video = req.body.video;
+    let guideID = req.body.guideID;
+
+
+    let section = new GuideSection();
+    section.title = title;
+    section.description = description;
+    section.image = image;
+    section.video = video;
+    section.guideID = guideID;
+
+    console.log(section);
+    section.save((err,result)=>{
+        if (err){
+            res.json(err);
+        } else {
+            res.json(result);
         }
-        res.send(result);
     })
+
+}
+
+
+exports.uploadImage = (req,res)=>{
+    // console.log(req.file);
+
+    let params = {
+        Bucket:imageBucket,
+        Key:req.file.originalname,
+        Body:req.file.buffer
+    }
+
+    s3.upload(params, (err,data)=>{
+        if(err){
+            console.log(err)
+        }
+        console.log(data);
+        res.json(data);
+    })
+
 }
