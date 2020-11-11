@@ -33,8 +33,8 @@ app.use(upload.single('file'));
 
 
 //Remember to remove undefined for production
-// let whitelist = ["http://guia.us-west-1.elasticbeanstalk.com","http://localhost:3000", undefined]
-let whitelist = ["http://guia.us-west-1.elasticbeanstalk.com","http://localhost:3000"]
+let whitelist = ["http://guia.us-west-1.elasticbeanstalk.com","http://localhost:3000", undefined]
+// let whitelist = ["http://guia.us-west-1.elasticbeanstalk.com","http://localhost:3000"]
 
 
 app.use(cors({
