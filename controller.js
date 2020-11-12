@@ -3,24 +3,9 @@ let mongoose = require("mongoose");
 let uuid = require("uuid");
 let GuideHead = mongoose.model("GuideHead");
 let GuideSection = mongoose.model("GuideSection");
+let User = mongoose.model("User")
 const credentials = require("./credentials");
 
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
-//REMOVE AWS CREDENTIALS BEFORE COMMIT
 
 let awsID = credentials.getID();
 let awsSecret = credentials.getSecret();
@@ -153,3 +138,50 @@ exports.uploadImage = (req, res) => {
     res.json(data);
   });
 };
+
+
+exports.createUser = (req,res)=>{
+  let userData = JSON.parse(req.body.file);
+  let user = {
+    username:userData.username,
+    email:userData.email,
+  };
+
+  User.findOneAndUpdate(
+    { email: user.email },
+    user,
+    { new: true, upsert: true },
+    (err, result) => {
+      if (err) {
+        res.json(err);
+        console.log(err);
+      } else {
+        res.json(result);
+      }
+    }
+  );
+
+}
+
+
+exports.getUser = (req,res)=>{
+  let userData = JSON.parse(req.body.file);
+  let user = {
+    email:userData.email,
+  };
+
+  User.findOne(
+    { email: user.email },
+    (err, result) => {
+      if (err) {
+        res.json(err);
+        console.log(err);
+      } else {
+        res.json(result);
+      }
+    }
+  );
+
+}
+
+

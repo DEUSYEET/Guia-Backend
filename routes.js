@@ -7,8 +7,10 @@ module.exports = app => {
     app.route('/getAll').get(control.getAll);
     app.route('/getGuide').get(control.getGuide);
     app.route('/deleteGuide').get(control.deleteGuide);
-
+    
     app.route('/uploadGuideHead').post(control.uploadGuideHead);
     app.route('/uploadGuideSection').post(control.uploadGuideSection);
     app.route('/uploadImage').post(control.uploadImage);
+    app.route('/createUser').post(control.createUser);
+    app.route('/getUser').post(control.getUser);
 }
