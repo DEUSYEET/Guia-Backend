@@ -11,6 +11,8 @@ module.exports = app => {
     app.route('/uploadGuideHead').post(control.uploadGuideHead);
     app.route('/uploadGuideSection').post(control.uploadGuideSection);
     app.route('/uploadImage').post(control.uploadImage);
-    app.route('/createUser').post(control.createUser);
+    app.route('/createUser').post(control.uploadUser);
     app.route('/getUser').post(control.getUser);
+    app.route('/voteGuide').post(control.voteGuide);
+    app.route('/uploadCommentBox').post(control.uploadCommentBox);
 }

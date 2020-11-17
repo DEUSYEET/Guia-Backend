@@ -3,9 +3,9 @@ let mongoose = require("mongoose");
 let uuid = require("uuid");
 let GuideHead = mongoose.model("GuideHead");
 let GuideSection = mongoose.model("GuideSection");
-let User = mongoose.model("User")
+let User = mongoose.model("User");
+let CommentBox = mongoose.model("CommentBox");
 const credentials = require("./credentials");
-
 
 let awsID = credentials.getID();
 let awsSecret = credentials.getSecret();
@@ -139,12 +139,11 @@ exports.uploadImage = (req, res) => {
   });
 };
 
-
-exports.createUser = (req,res)=>{
+exports.uploadUser = (req, res) => {
   let userData = JSON.parse(req.body.file);
   let user = {
-    username:userData.username,
-    email:userData.email,
+    username: userData.username,
+    email: userData.email,
   };
 
   User.findOneAndUpdate(
@@ -160,18 +159,95 @@ exports.createUser = (req,res)=>{
       }
     }
   );
+};
 
-}
-
-
-exports.getUser = (req,res)=>{
+exports.getUser = (req, res) => {
   let userData = JSON.parse(req.body.file);
   let user = {
-    email:userData.email,
+    email: userData.email,
   };
 
-  User.findOne(
-    { email: user.email },
+  User.findOne({ email: user.email }, (err, result) => {
+    if (err) {
+      res.json(err);
+      console.log(err);
+    } else {
+      res.json(result);
+    }
+  });
+};
+
+exports.voteGuide = (req, res) => {
+  let voteData = JSON.parse(req.body.file);
+  let guide = {
+    guideID: voteData.guideID,
+    voteType: voteData.voteType,
+  };
+  let user = voteData.user;
+
+  GuideHead.findOne({ guideID: guide.guideID }, (err, result) => {
+    if (err) {
+      res.json(err);
+    } else {
+
+      let newScoreDown = result.scoreDown || 0;
+      let newScoreUp = result.scoreUp || 0;
+
+      if (guide.voteType === "up" && !(result.upUsers.includes(user))) {
+        newScoreUp++;
+        if (result.downUsers.includes(user)) {
+          let index = result.downUsers.indexOf(user);
+          result.downUsers.splice(index, 1, "");
+          newScoreDown = result.scoreDown - 1;
+        }
+        result.upUsers.push(user);
+      } else if (guide.voteType === "down" && !(result.downUsers.includes(user))) {
+        newScoreDown++;
+        if (result.upUsers.includes(user)) {
+          let index = result.upUsers.indexOf(user);
+          result.upUsers.splice(index, 1, "");
+          newScoreUp = result.scoreUp - 1;
+        }
+        result.downUsers.push(user);
+      }
+
+      // console.log(newScoreUp,newScoreDown)
+      GuideHead.findByIdAndUpdate(
+        result._id,
+        {
+          scoreUp: newScoreUp,
+          scoreDown: newScoreDown,
+          upUsers: result.upUsers,
+          downUsers: result.downUsers,
+        },{
+          new:true
+        },
+        (err, newResult) => {
+          if (err) {
+            // res.json(err);
+          } else {
+            res.json(newResult);
+            console.log(newResult.scoreUp, newResult.scoreDown);
+          }
+        }
+      );
+
+    }
+  });
+};
+
+exports.uploadCommentBox = (res,req)=>{
+  let boxData = JSON.parse(req.body.file);
+
+  let box = {
+    parentID: boxData.parentID,
+    boxID: boxData.boxID,
+  };
+
+  CommentBox.findOneAndUpdate(
+    { boxID: box.boxID },
+    box,
+    { new: true, upsert: true },
     (err, result) => {
       if (err) {
         res.json(err);
@@ -181,7 +257,4 @@ exports.getUser = (req,res)=>{
       }
     }
   );
-
 }
-
-

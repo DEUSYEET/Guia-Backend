@@ -11,6 +11,8 @@ const upload = multer();
 let GuideHeadSchema = require('./GuideHeadSchema')
 let GuideSectionSchema = require('./GuideSectionSchema')
 let UserSchema = require('./UserSchema')
+let CommentSchema = require('./CommentSchema')
+let CommentBoxSchema = require('./CommentBoxSchema')
 
 mongoose.Promise = global.Promise;
 mongoose.connect("mongodb+srv://root:GRHSNOuDazb37S4j@guia0.evfpg.mongodb.net/guides?retryWrites=true&w=majority").catch(error => console.log("error"));

@@ -7,7 +7,9 @@ var GuideHeadSchema = new mongoose.Schema({
     image:String,
     video:String,
     scoreUp:Number,
+    upUsers:[String],
     scoreDown:Number,
+    downUsers:[String],
 })
 
 module.exports = mongoose.model('GuideHead', GuideHeadSchema);
