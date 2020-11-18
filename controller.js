@@ -5,6 +5,7 @@ let GuideHead = mongoose.model("GuideHead");
 let GuideSection = mongoose.model("GuideSection");
 let User = mongoose.model("User");
 let CommentBox = mongoose.model("CommentBox");
+let Comment = mongoose.model("Comment");
 const credentials = require("./credentials");
 
 let awsID = credentials.getID();
@@ -189,11 +190,10 @@ exports.voteGuide = (req, res) => {
     if (err) {
       res.json(err);
     } else {
-
       let newScoreDown = result.scoreDown || 0;
       let newScoreUp = result.scoreUp || 0;
 
-      if (guide.voteType === "up" && !(result.upUsers.includes(user))) {
+      if (guide.voteType === "up" && !result.upUsers.includes(user)) {
         newScoreUp++;
         if (result.downUsers.includes(user)) {
           let index = result.downUsers.indexOf(user);
@@ -201,7 +201,10 @@ exports.voteGuide = (req, res) => {
           newScoreDown = result.scoreDown - 1;
         }
         result.upUsers.push(user);
-      } else if (guide.voteType === "down" && !(result.downUsers.includes(user))) {
+      } else if (
+        guide.voteType === "down" &&
+        !result.downUsers.includes(user)
+      ) {
         newScoreDown++;
         if (result.upUsers.includes(user)) {
           let index = result.upUsers.indexOf(user);
@@ -219,8 +222,9 @@ exports.voteGuide = (req, res) => {
           scoreDown: newScoreDown,
           upUsers: result.upUsers,
           downUsers: result.downUsers,
-        },{
-          new:true
+        },
+        {
+          new: true,
         },
         (err, newResult) => {
           if (err) {
@@ -231,12 +235,11 @@ exports.voteGuide = (req, res) => {
           }
         }
       );
-
     }
   });
 };
 
-exports.uploadCommentBox = (res,req)=>{
+exports.uploadCommentBox = (req, res) => {
   let boxData = JSON.parse(req.body.file);
 
   let box = {
@@ -257,4 +260,147 @@ exports.uploadCommentBox = (res,req)=>{
       }
     }
   );
+};
+
+exports.getCommentBox = (req, res) => {
+  let boxData = JSON.parse(req.body.file);
+  let parentID = boxData.parentID;
+  // console.log(parentID)
+
+  CommentBox.findOne({ parentID: parentID }, (err, result) => {
+    if (err) {
+      res.json(err);
+      console.log(err);
+    } else {
+      res.json(result);
+    }
+  });
+};
+
+exports.uploadComment = (req, res) => {
+  let commentData = JSON.parse(req.body.file);
+
+  let comment = {
+    parentID: commentData.parentID,
+    commentID: commentData.commentID,
+    author: commentData.author,
+    body: commentData.body,
+    scoreUp: 0,
+    upUsers: [],
+    scoreDown: 0,
+    downUsers: [],
+  };
+
+  Comment.findOneAndUpdate(
+    { commentID: comment.commentID },
+    comment,
+    { new: true, upsert: true },
+    (err, result) => {
+      if (err) {
+        res.json(err);
+        console.log(err);
+      } else {
+        res.json(result);
+      }
+    }
+  );
+};
+
+exports.getComments = (req, res) => {
+  let commentsData = JSON.parse(req.body.file);
+  let parentID = commentsData.parentID;
+  // console.log(parentID);
+
+  Comment.find({ parentID: parentID }, (err, result) => {
+    if (err) {
+      res.json(err);
+      console.log(err);
+    } else {
+      res.json(result);
+    }
+  });
+};
+
+exports.deleteComment = (req,res)=>{
+  let commentData = JSON.parse(req.body.file);
+  
+  let comment = {
+    commentID: commentData.commentID,
+    author: "[Deleted]",
+    body: "[Deleted]",
+  };
+
+  Comment.findOneAndDelete(
+    { commentID: comment.commentID },
+    (err, result) => {
+      if (err) {
+        res.json(err);
+        console.log(err);
+      } else {
+        res.json(result);
+      }
+    }
+  );
 }
+
+exports.voteComment = (req, res) => {
+  let voteData = JSON.parse(req.body.file);
+  let comment = {
+    commentID: voteData.commentID,
+    voteType: voteData.voteType,
+  };
+  let user = voteData.user;
+
+  // console.log(user, comment);
+  Comment.findOne({ commentID: comment.commentID }, (err, result) => {
+    if (err) {
+      res.json(err);
+    } else {
+      let newScoreDown = result.scoreDown || 0;
+      let newScoreUp = result.scoreUp || 0;
+
+      if (comment.voteType === "up" && !result.upUsers.includes(user)) {
+        newScoreUp++;
+        if (result.downUsers.includes(user)) {
+          let index = result.downUsers.indexOf(user);
+          result.downUsers.splice(index, 1, "");
+          newScoreDown = result.scoreDown - 1;
+        }
+        result.upUsers.push(user);
+      } else if (
+        comment.voteType === "down" &&
+        !result.downUsers.includes(user)
+      ) {
+        newScoreDown++;
+        if (result.upUsers.includes(user)) {
+          let index = result.upUsers.indexOf(user);
+          result.upUsers.splice(index, 1, "");
+          newScoreUp = result.scoreUp - 1;
+        }
+        result.downUsers.push(user);
+      }
+
+      // console.log(newScoreUp,newScoreDown)
+      Comment.findByIdAndUpdate(
+        result._id,
+        {
+          scoreUp: newScoreUp,
+          scoreDown: newScoreDown,
+          upUsers: result.upUsers,
+          downUsers: result.downUsers,
+        },
+        {
+          new: true,
+        },
+        (err, newResult) => {
+          if (err) {
+            // res.json(err);
+          } else {
+            res.json(newResult);
+            // console.log(newResult.upUsers, newResult.downUsers);
+          }
+        }
+      );
+    }
+  });
+};
