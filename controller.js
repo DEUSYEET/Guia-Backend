@@ -145,6 +145,7 @@ exports.uploadUser = (req, res) => {
   let user = {
     username: userData.username,
     email: userData.email,
+    image: userData.image ||"https://guia-images.s3-us-west-1.amazonaws.com/Full-Green-Tree-984x1024.png",
   };
 
   User.findOneAndUpdate(
@@ -287,7 +288,7 @@ exports.uploadComment = (req, res) => {
     body: commentData.body,
     scoreUp: 0,
     upUsers: [],
-    scoreDown: 0,
+    scoreDown: commentData.scoreDown,
     downUsers: [],
   };
 
