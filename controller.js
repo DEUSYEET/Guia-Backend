@@ -179,6 +179,25 @@ exports.getUser = (req, res) => {
   });
 };
 
+exports.getUserImage = (req, res) => {
+  let userData = JSON.parse(req.body.file);
+  let user = {
+    username: userData,
+  };
+  // console.log(req.body.file);
+  // console.log(user.username);
+  User.findOne({ username: user.username }, (err, result) => {
+    if (err) {
+      res.json(err);
+      console.log(err);
+    } else {
+      res.json(result);
+    }
+  });
+};
+
+
+
 exports.voteGuide = (req, res) => {
   let voteData = JSON.parse(req.body.file);
   let guide = {

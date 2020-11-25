@@ -18,6 +18,7 @@ module.exports = (app) => {
   app.route("/uploadComment").post(control.uploadComment);
 
   app.route("/getUser").post(control.getUser);
+  app.route("/getUserImage").post(control.getUserImage);
   app.route("/getCommentBox").post(control.getCommentBox);
   app.route("/getComments").post(control.getComments);
   app.route("/deleteComment").post(control.deleteComment);
