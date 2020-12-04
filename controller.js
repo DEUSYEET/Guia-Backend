@@ -6,7 +6,9 @@ let GuideSection = mongoose.model("GuideSection");
 let User = mongoose.model("User");
 let CommentBox = mongoose.model("CommentBox");
 let Comment = mongoose.model("Comment");
+let ChatLog = mongoose.model("ChatLog");
 const credentials = require("./credentials");
+const { verifyCommentAuthor, verifyGuideAuthor } = require("./verifyTools");
 
 let awsID = credentials.getID();
 let awsSecret = credentials.getSecret();
@@ -51,11 +53,34 @@ exports.getGuide = (req, res) => {
 
 exports.deleteGuide = (req, res) => {
   let guideId = req.query.guideId;
-  GuideHead.deleteOne({ guideID: guideId }, (err, result) => {
-    if (err) {
-      res.json(err);
-    } else {
-      GuideSection.deleteMany({ guideID: guideId }, (err, result) => {
+  let token = req.query.token;
+
+  verifyGuideAuthor(token, guideId).then((val) => {
+    if (val) {
+      GuideHead.deleteOne({ guideID: guideId }, (err, result) => {
+        if (err) {
+          res.json(err);
+        } else {
+          GuideSection.deleteMany({ guideID: guideId }, (err, result) => {
+            if (err) {
+              res.json(err);
+            } else {
+              res.json(result);
+            }
+          });
+        }
+      });
+    }
+  });
+};
+
+exports.deleteGuideSection = (req, res) => {
+  let sectionData = JSON.parse(req.body.file);
+  // console.log(sectionData)
+  verifyGuideAuthor(sectionData.token, sectionData.guideID).then((val) => {
+    if (val) {
+      // console.log(val);
+      GuideSection.findByIdAndDelete(sectionData.sectionID, (err, result) => {
         if (err) {
           res.json(err);
         } else {
@@ -145,7 +170,9 @@ exports.uploadUser = (req, res) => {
   let user = {
     username: userData.username,
     email: userData.email,
-    image: userData.image ||"https://guia-images.s3-us-west-1.amazonaws.com/Full-Green-Tree-984x1024.png",
+    image:
+      userData.image ||
+      "https://guia-images.s3-us-west-1.amazonaws.com/Full-Green-Tree-984x1024.png",
   };
 
   User.findOneAndUpdate(
@@ -196,7 +223,38 @@ exports.getUserImage = (req, res) => {
   });
 };
 
+exports.getUserFromName = (req, res) => {
+  let userData = JSON.parse(req.body.file);
+  let user = {
+    username: userData.username,
+  };
 
+  User.findOne({ username: user.username }, (err, result) => {
+    if (err) {
+      res.json(err);
+      console.log(err);
+    } else {
+      res.json(result);
+    }
+  });
+};
+
+exports.getUserImage = (req, res) => {
+  let userData = JSON.parse(req.body.file);
+  let user = {
+    username: userData,
+  };
+  // console.log(req.body.file);
+  // console.log(user.username);
+  User.findOne({ username: user.username }, (err, result) => {
+    if (err) {
+      res.json(err);
+      console.log(err);
+    } else {
+      res.json(result);
+    }
+  });
+};
 
 exports.voteGuide = (req, res) => {
   let voteData = JSON.parse(req.body.file);
@@ -341,27 +399,30 @@ exports.getComments = (req, res) => {
   });
 };
 
-exports.deleteComment = (req,res)=>{
+exports.deleteComment = (req, res) => {
   let commentData = JSON.parse(req.body.file);
-  
-  let comment = {
-    commentID: commentData.commentID,
-    author: "[Deleted]",
-    body: "[Deleted]",
-  };
+  verifyCommentAuthor(commentData.token, commentData.commentID).then((val) => {
+    if (val) {
+      let comment = {
+        commentID: commentData.commentID,
+        author: "[Deleted]",
+        body: "[Deleted]",
+      };
 
-  Comment.findOneAndDelete(
-    { commentID: comment.commentID },
-    (err, result) => {
-      if (err) {
-        res.json(err);
-        console.log(err);
-      } else {
-        res.json(result);
-      }
+      Comment.findOneAndDelete(
+        { commentID: comment.commentID },
+        (err, result) => {
+          if (err) {
+            res.json(err);
+            console.log(err);
+          } else {
+            res.json(result);
+          }
+        }
+      );
     }
-  );
-}
+  });
+};
 
 exports.voteComment = (req, res) => {
   let voteData = JSON.parse(req.body.file);
@@ -418,6 +479,58 @@ exports.voteComment = (req, res) => {
           } else {
             res.json(newResult);
             // console.log(newResult.upUsers, newResult.downUsers);
+          }
+        }
+      );
+    }
+  });
+};
+
+exports.uploadChatLog = (req, res) => {
+  let logData = JSON.parse(req.body.file);
+
+  let log = {
+    roomID: logData.roomID,
+    chatLog: logData.chatLog,
+  };
+  ChatLog.findOneAndUpdate(
+    { roomID: log.roomID },
+    log,
+    { new: true, upsert: true },
+    (err, result) => {
+      if (err) {
+        res.json(err);
+        console.log(err);
+      } else {
+        res.json(result);
+      }
+    }
+  );
+};
+
+exports.getChatLog = (req, res) => {
+  let logData = JSON.parse(req.body.file);
+
+  let log = {
+    roomID: logData.roomID,
+  };
+  ChatLog.findOne({ roomID: log.roomID }, (err, result) => {
+    if (err) {
+      res.json(err);
+      console.log(err);
+    } else if(result){
+      res.json(result);
+    } else {
+      ChatLog.findOneAndUpdate(
+        { roomID: log.roomID },
+        log,
+        { new: true, upsert: true },
+        (err, result) => {
+          if (err) {
+            res.json(err);
+            console.log(err);
+          } else {
+            res.json(result);
           }
         }
       );
