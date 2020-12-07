@@ -206,6 +206,17 @@ exports.getUser = (req, res) => {
   });
 };
 
+exports.getUsers = (req, res) => {
+  User.find((err, result) => {
+    if (err) {
+      res.json(err);
+      console.log(err);
+    } else {
+      res.json(result);
+    }
+  });
+};
+
 exports.getUserImage = (req, res) => {
   let userData = JSON.parse(req.body.file);
   let user = {

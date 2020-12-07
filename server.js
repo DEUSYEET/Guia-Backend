@@ -8,8 +8,13 @@ const multer = require("multer");
 const upload = multer();
 var http = require("http").createServer(app);
 
-//Remember to remove undefined for production
-// let whitelist = ["http://guia.us-west-1.elasticbeanstalk.com","http://localhost:3000", undefined]
+//THIS THING IS STUPID UNSECURE Remember to remove undefined for production
+// let whitelist = [
+//   "http://guia.us-west-1.elasticbeanstalk.com",
+//   "http://localhost:3000",
+//   undefined,
+// ];
+
 let whitelist = [
   "http://guia.us-west-1.elasticbeanstalk.com",
   "http://localhost:3000",
@@ -18,23 +23,26 @@ const io = require("socket.io")(http, {
   cors: {
     methods: ["GET", "POST"],
     origin: (origin, callback) => {
+      console.log(origin);
       if (whitelist.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Origin not allowed"));
+        callback(new Error(`Origin not allowed:    ${origin}`));
       }
     },
   },
 });
 
+
 app.use(
   cors({
     methods: ["GET", "POST", "DELETE"],
     origin: (origin, callback) => {
+      // console.log(origin);
       if (whitelist.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Origin not allowed"));
+        callback(new Error(`Origin not allowed:    ${origin}`),true);
       }
     },
   })
@@ -69,22 +77,19 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(upload.single("file"));
 
-
-let requestCount = 0;
-// const counter = 
-app.use((req,res,next)=>{
-    requestCount++;
-    console.log(requestCount)
-    next();
-});
-
-
+// let requestCount = 0;
+// // const counter =
+// app.use((req, res, next) => {
+//   requestCount++;
+//   console.log(requestCount);
+//   next();
+// });
 
 routes(app);
 
 io.on("connection", (socket) => {
   const { roomID } = socket.handshake.query;
-// console.log(socket.handshake.query)
+  // console.log(socket.handshake.query)
   socket.join(roomID);
 
   socket.on("newChatMessage", (data) => {
@@ -98,5 +103,3 @@ io.on("connection", (socket) => {
 });
 
 http.listen(process.env.PORT || 8080);
-
-

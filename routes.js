@@ -5,6 +5,7 @@ module.exports = (app) => {
   app.route("/").get(control.test);
   app.route("/getAll").get(control.getAll);
   app.route("/getGuide").get(control.getGuide);
+  app.route("/getUsers").get(control.getUsers);
   
   app.route("/voteGuide").post(control.voteGuide);
   app.route("/voteComment").post(control.voteComment);
